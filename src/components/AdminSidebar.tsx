@@ -64,7 +64,7 @@ export function AdminSidebar() {
                       end={item.url === "/"}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                          ? "bg-secondary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
                           : ""
                       }
                     >
