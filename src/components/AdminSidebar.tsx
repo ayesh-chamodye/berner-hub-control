@@ -64,8 +64,8 @@ export function AdminSidebar() {
                       end={item.url === "/"}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-secondary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
-                          : ""
+                          ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                          : "text-black hover:text-black"
                       }
                     >
                       <item.icon className="h-4 w-4" />
