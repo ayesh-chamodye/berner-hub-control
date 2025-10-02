@@ -68,7 +68,7 @@ export function AdminSidebar() {
                           : "text-black hover:text-black"
                       }
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-4 w-4 text-black" />
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
