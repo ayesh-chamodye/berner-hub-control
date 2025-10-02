@@ -72,20 +72,6 @@ export type Database = {
             foreignKeyName: "activity_logs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["approver_id"]
-          },
-          {
-            foreignKeyName: "activity_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "activity_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "vw_user_details"
             referencedColumns: ["id"]
           },
@@ -210,20 +196,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "expense_approvals_approver_id_fkey"
-            columns: ["approver_id"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["approver_id"]
-          },
-          {
-            foreignKeyName: "expense_approvals_approver_id_fkey"
-            columns: ["approver_id"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "expense_approvals_approver_id_fkey"
@@ -533,20 +505,6 @@ export type Database = {
             foreignKeyName: "expenses_approved_by_fkey"
             columns: ["approved_by"]
             isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["approver_id"]
-          },
-          {
-            foreignKeyName: "expenses_approved_by_fkey"
-            columns: ["approved_by"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "expenses_approved_by_fkey"
-            columns: ["approved_by"]
-            isOneToOne: false
             referencedRelation: "vw_user_details"
             referencedColumns: ["id"]
           },
@@ -568,20 +526,6 @@ export type Database = {
             foreignKeyName: "expenses_paid_by_fkey"
             columns: ["paid_by"]
             isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["approver_id"]
-          },
-          {
-            foreignKeyName: "expenses_paid_by_fkey"
-            columns: ["paid_by"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "expenses_paid_by_fkey"
-            columns: ["paid_by"]
-            isOneToOne: false
             referencedRelation: "vw_user_details"
             referencedColumns: ["id"]
           },
@@ -596,20 +540,6 @@ export type Database = {
             foreignKeyName: "expenses_rejected_by_fkey"
             columns: ["rejected_by"]
             isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["approver_id"]
-          },
-          {
-            foreignKeyName: "expenses_rejected_by_fkey"
-            columns: ["rejected_by"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "expenses_rejected_by_fkey"
-            columns: ["rejected_by"]
-            isOneToOne: false
             referencedRelation: "vw_user_details"
             referencedColumns: ["id"]
           },
@@ -619,20 +549,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "expenses_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["approver_id"]
-          },
-          {
-            foreignKeyName: "expenses_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "expenses_user_id_fkey"
@@ -714,20 +630,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["approver_id"]
-          },
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "notifications_user_id_fkey"
@@ -991,20 +893,6 @@ export type Database = {
             foreignKeyName: "user_profiles_reporting_to_fkey"
             columns: ["reporting_to"]
             isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["approver_id"]
-          },
-          {
-            foreignKeyName: "user_profiles_reporting_to_fkey"
-            columns: ["reporting_to"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "user_profiles_reporting_to_fkey"
-            columns: ["reporting_to"]
-            isOneToOne: false
             referencedRelation: "vw_user_details"
             referencedColumns: ["id"]
           },
@@ -1014,20 +902,6 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["approver_id"]
-          },
-          {
-            foreignKeyName: "user_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "user_profiles_user_id_fkey"
@@ -1109,20 +983,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["approver_id"]
-          },
-          {
-            foreignKeyName: "user_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "vw_expense_summary"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "user_sessions_user_id_fkey"
@@ -1212,7 +1072,36 @@ export type Database = {
           user_id: number | null
           user_name: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "expenses_approved_by_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_approved_by_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "vw_user_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "vw_user_details"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vw_user_details: {
         Row: {

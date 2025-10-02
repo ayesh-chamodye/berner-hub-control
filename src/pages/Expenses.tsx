@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,53 +22,17 @@ import {
 } from "@/components/ui/select";
 import { Search, Check, X, Eye } from "lucide-react";
 
-const mockExpenses = [
-  {
-    id: 1,
-    user: "John Doe",
-    title: "Office Supplies",
-    category: "Supplies",
-    amount: "5,000",
-    date: "2025-01-15",
-    status: "pending",
-  },
-  {
-    id: 2,
-    user: "Jane Smith",
-    title: "Client Lunch Meeting",
-    category: "Meals",
-    amount: "8,500",
-    date: "2025-01-14",
-    status: "approved",
-  },
-  {
-    id: 3,
-    user: "Mike Johnson",
-    title: "Business Travel - Colombo",
-    category: "Travel",
-    amount: "15,000",
-    date: "2025-01-13",
-    status: "pending",
-  },
-  {
-    id: 4,
-    user: "Sarah Williams",
-    title: "Software License Annual",
-    category: "Software",
-    amount: "12,000",
-    date: "2025-01-12",
-    status: "approved",
-  },
-  {
-    id: 5,
-    user: "Tom Brown",
-    title: "Conference Registration",
-    category: "Training",
-    amount: "25,000",
-    date: "2025-01-11",
-    status: "rejected",
-  },
-];
+interface Expense {
+  id: number;
+  title: string;
+  amount: number;
+  currency: string;
+  expense_date: string;
+  status: string;
+  category_name: string | null;
+  user_name: string | null;
+  mobile_number: string | null;
+}
 
 const statusColors = {
   pending: "bg-warning text-warning-foreground",
@@ -78,6 +44,84 @@ const statusColors = {
 const Expenses = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchExpenses();
+  }, [statusFilter]);
+
+  const fetchExpenses = async () => {
+    try {
+      let query = supabase
+        .from("vw_expense_summary")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (statusFilter !== "all") {
+        query = query.eq("status", statusFilter);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setExpenses(data || []);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to fetch expenses");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (id: number) => {
+    try {
+      const { error } = await supabase
+        .from("expenses")
+        .update({ 
+          status: "approved", 
+          is_approved: true,
+          approved_at: new Date().toISOString() 
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success("Expense approved successfully");
+      fetchExpenses();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to approve expense");
+    }
+  };
+
+  const handleReject = async (id: number) => {
+    try {
+      const { error } = await supabase
+        .from("expenses")
+        .update({ 
+          status: "rejected",
+          rejected_at: new Date().toISOString() 
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success("Expense rejected successfully");
+      fetchExpenses();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to reject expense");
+    }
+  };
+
+  const filteredExpenses = expenses.filter((expense) =>
+    expense.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    expense.user_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -131,38 +175,55 @@ const Expenses = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockExpenses.map((expense) => (
-                  <TableRow key={expense.id}>
-                    <TableCell className="font-medium">#{expense.id}</TableCell>
-                    <TableCell>{expense.user}</TableCell>
-                    <TableCell>{expense.title}</TableCell>
-                    <TableCell>{expense.category}</TableCell>
-                    <TableCell>{expense.amount}</TableCell>
-                    <TableCell>{expense.date}</TableCell>
-                    <TableCell>
-                      <Badge className={statusColors[expense.status as keyof typeof statusColors]}>
-                        {expense.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {expense.status === "pending" && (
-                          <>
-                            <Button size="sm" variant="outline" className="text-success">
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button size="sm" variant="outline" className="text-destructive">
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                {filteredExpenses.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                      No expenses found
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredExpenses.map((expense) => (
+                    <TableRow key={expense.id}>
+                      <TableCell className="font-medium">
+                        #{expense.id}
+                      </TableCell>
+                      <TableCell>{expense.user_name || "N/A"}</TableCell>
+                      <TableCell>{expense.title}</TableCell>
+                      <TableCell>{expense.category_name || "N/A"}</TableCell>
+                      <TableCell>{Number(expense.amount).toLocaleString()}</TableCell>
+                      <TableCell>{new Date(expense.expense_date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge className={statusColors[expense.status as keyof typeof statusColors]}>
+                          {expense.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          {expense.status === "pending" && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="text-success"
+                                onClick={() => handleApprove(expense.id)}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="text-destructive"
+                                onClick={() => handleReject(expense.id)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

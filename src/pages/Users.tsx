@@ -1,6 +1,9 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -11,15 +14,16 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Search, UserPlus } from "lucide-react";
-import { useState } from "react";
 
-const mockUsers = [
-  { id: 1, name: "John Doe", mobile: "+94771234567", role: "employee", status: "active" },
-  { id: 2, name: "Jane Smith", mobile: "+94772345678", role: "employee", status: "active" },
-  { id: 3, name: "Mike Johnson", mobile: "+94773456789", role: "admin", status: "active" },
-  { id: 4, name: "Sarah Williams", mobile: "+94774567890", role: "employee", status: "blocked" },
-  { id: 5, name: "Tom Brown", mobile: "+94775678901", role: "owner", status: "active" },
-];
+interface User {
+  id: number;
+  mobile_number: string;
+  role: string;
+  is_active: boolean;
+  is_blocked: boolean;
+  full_name: string | null;
+  email: string | null;
+}
 
 const roleColors = {
   employee: "bg-secondary text-secondary-foreground",
@@ -30,6 +34,42 @@ const roleColors = {
 
 const Users = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("vw_user_details")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to fetch users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredUsers = users.filter((user) =>
+    user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.mobile_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -75,28 +115,38 @@ const Users = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">#{user.id}</TableCell>
-                    <TableCell>{user.name}</TableCell>
-                    <TableCell>{user.mobile}</TableCell>
-                    <TableCell>
-                      <Badge className={roleColors[user.role as keyof typeof roleColors]}>
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.status === "active" ? "default" : "destructive"}>
-                        {user.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" variant="outline">
-                        Edit
-                      </Button>
+                {filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground">
+                      No users found
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">
+                        #{user.id}
+                      </TableCell>
+                      <TableCell>{user.full_name || user.email || "N/A"}</TableCell>
+                      <TableCell>{user.mobile_number}</TableCell>
+                      <TableCell>
+                        <Badge className={roleColors[user.role as keyof typeof roleColors]}>
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.is_active && !user.is_blocked ? "default" : "destructive"}>
+                          {user.is_active && !user.is_blocked ? "active" : "blocked"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" variant="outline">
+                          Edit
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

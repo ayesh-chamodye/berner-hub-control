@@ -1,4 +1,8 @@
-import { LayoutDashboard, Users, Receipt, Settings, Activity, Tag } from "lucide-react";
+import { LayoutDashboard, Users, Receipt, Settings, Activity, Tag, Image, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -16,12 +20,23 @@ const menuItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Expenses", url: "/expenses", icon: Receipt },
   { title: "Users", url: "/users", icon: Users },
-  { title: "Categories", url: "/categories", icon: Tag },
-  { title: "Activity Logs", url: "/activity", icon: Activity },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Ad Banners", url: "/banners", icon: Image },
 ];
 
 export function AdminSidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast.success("Logged out successfully");
+      navigate("/auth");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to log out");
+    }
+  };
+
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="border-b px-6 py-4">
@@ -60,6 +75,19 @@ export function AdminSidebar() {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupContent>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
