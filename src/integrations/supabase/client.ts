@@ -33,28 +33,21 @@ const generateUniqueFileName = (file: File) => {
 export const bannerService = {
   // Upload banner image to storage and return URL
   async uploadBannerImage(file: File) {
-    // Generate a unique filename
-    const filename = generateUniqueFileName(file);
-    const filePath = `banners/${filename}`;
-
-    // Upload the file to the ad-banners bucket
-    const { error: uploadError } = await supabase.storage
-      .from('ad-banners')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (uploadError) throw uploadError;
-
-    // Get the public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('ad-banners')
-      .getPublicUrl(filePath);
+    const { storageService } = await import('./storage');
+    
+    const result = await storageService.uploadFile(file, {
+      bucket: 'ad-banners',
+      category: 'banners',
+      useYearMonth: true,
+      maxSizeMB: 5,
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+      cacheControl: '3600'
+    });
 
     return {
-      url: publicUrl,
-      path: filePath
+      url: result.url,
+      path: result.path,
+      metadata: result.metadata
     };
   },
   // Get active banners for the current user role
@@ -125,11 +118,8 @@ export const bannerService = {
 
     // Delete the image from storage if it exists
     if (banner?.image_path) {
-      const { error: storageError } = await supabase.storage
-        .from('ad-banners')
-        .remove([banner.image_path]);
-      
-      if (storageError) throw storageError;
+      const { storageService } = await import('./storage');
+      await storageService.deleteFile(banner.image_path, 'ad-banners');
     }
 
     // Delete the banner record
