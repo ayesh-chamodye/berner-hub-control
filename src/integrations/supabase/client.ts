@@ -15,3 +15,116 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
+
+// Banner Types
+type Banner = Database['public']['Tables']['ad_banners']['Row'];
+type BannerInsert = Database['public']['Tables']['ad_banners']['Insert'];
+type BannerUpdate = Database['public']['Tables']['ad_banners']['Update'];
+
+// Banner Management Functions
+export const bannerService = {
+  // Get active banners for the current user role
+  async getActiveBanners(userRole?: string) {
+    const { data, error } = await supabase.rpc('get_active_banners', { user_role: userRole });
+    if (error) throw error;
+    return data;
+  },
+
+  // Get all banners (admin only)
+  async getAllBanners() {
+    const { data, error } = await supabase
+      .from('ad_banners')
+      .select('*')
+      .order('display_order', { ascending: true });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Get a single banner by ID
+  async getBannerById(id: number) {
+    const { data, error } = await supabase
+      .from('ad_banners')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Create a new banner
+  async createBanner(banner: BannerInsert) {
+    const { data, error } = await supabase
+      .from('ad_banners')
+      .insert(banner)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Update an existing banner
+  async updateBanner(id: number, updates: BannerUpdate) {
+    const { data, error } = await supabase
+      .from('ad_banners')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Delete a banner
+  async deleteBanner(id: number) {
+    const { error } = await supabase
+      .from('ad_banners')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  // Update banner display order
+  async updateBannerOrder(id: number, newOrder: number) {
+    const { error } = await supabase
+      .from('ad_banners')
+      .update({ display_order: newOrder })
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  // Increment banner view count
+  async incrementViewCount(id: number) {
+    const { error } = await supabase
+      .from('ad_banners')
+      .update({ view_count: supabase.rpc('increment') })
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  // Increment banner click count
+  async incrementClickCount(id: number) {
+    const { error } = await supabase
+      .from('ad_banners')
+      .update({ click_count: supabase.rpc('increment') })
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  // Toggle banner active status
+  async toggleBannerStatus(id: number, isActive: boolean) {
+    const { error } = await supabase
+      .from('ad_banners')
+      .update({ is_active: isActive })
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+};

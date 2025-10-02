@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_banners: {
+        Row: {
+          id: number
+          title: string | null
+          description: string | null
+          image_url: string
+          image_path: string | null
+          storage_bucket: string
+          link_url: string | null
+          link_type: "internal" | "external" | "none"
+          action_data: Json | null
+          display_order: number
+          is_active: boolean
+          start_date: string | null
+          end_date: string | null
+          target_roles: string[] | null
+          view_count: number
+          click_count: number
+          created_at: string
+          updated_at: string
+          created_by: number | null
+        }
+        Insert: {
+          id?: never
+          title?: string | null
+          description?: string | null
+          image_url: string
+          image_path?: string | null
+          storage_bucket?: string
+          link_url?: string | null
+          link_type?: "internal" | "external" | "none"
+          action_data?: Json | null
+          display_order?: number
+          is_active?: boolean
+          start_date?: string | null
+          end_date?: string | null
+          target_roles?: string[] | null
+          view_count?: number
+          click_count?: number
+          created_at?: string
+          updated_at?: string
+          created_by?: number | null
+        }
+        Update: {
+          id?: never
+          title?: string | null
+          description?: string | null
+          image_url?: string
+          image_path?: string | null
+          storage_bucket?: string
+          link_url?: string | null
+          link_type?: "internal" | "external" | "none"
+          action_data?: Json | null
+          display_order?: number
+          is_active?: boolean
+          start_date?: string | null
+          end_date?: string | null
+          target_roles?: string[] | null
+          view_count?: number
+          click_count?: number
+          created_at?: string
+          updated_at?: string
+          created_by?: number | null
+        }
+      }
       activity_logs: {
         Row: {
           action: string
