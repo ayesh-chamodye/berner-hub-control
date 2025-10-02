@@ -21,8 +21,42 @@ type Banner = Database['public']['Tables']['ad_banners']['Row'];
 type BannerInsert = Database['public']['Tables']['ad_banners']['Insert'];
 type BannerUpdate = Database['public']['Tables']['ad_banners']['Update'];
 
+// Helper function to generate a unique filename
+const generateUniqueFileName = (file: File) => {
+  const timestamp = new Date().getTime();
+  const randomString = Math.random().toString(36).substring(2, 15);
+  const extension = file.name.split('.').pop();
+  return `${timestamp}-${randomString}.${extension}`;
+};
+
 // Banner Management Functions
 export const bannerService = {
+  // Upload banner image to storage and return URL
+  async uploadBannerImage(file: File) {
+    // Generate a unique filename
+    const filename = generateUniqueFileName(file);
+    const filePath = `banners/${filename}`;
+
+    // Upload the file to the ad-banners bucket
+    const { error: uploadError } = await supabase.storage
+      .from('ad-banners')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('ad-banners')
+      .getPublicUrl(filePath);
+
+    return {
+      url: publicUrl,
+      path: filePath
+    };
+  },
   // Get active banners for the current user role
   async getActiveBanners(userRole?: string) {
     const { data, error } = await supabase.rpc('get_active_banners', { user_role: userRole });
@@ -80,6 +114,25 @@ export const bannerService = {
 
   // Delete a banner
   async deleteBanner(id: number) {
+    // First get the banner to get its image path
+    const { data: banner, error: fetchError } = await supabase
+      .from('ad_banners')
+      .select('image_path')
+      .eq('id', id)
+      .single();
+    
+    if (fetchError) throw fetchError;
+
+    // Delete the image from storage if it exists
+    if (banner?.image_path) {
+      const { error: storageError } = await supabase.storage
+        .from('ad-banners')
+        .remove([banner.image_path]);
+      
+      if (storageError) throw storageError;
+    }
+
+    // Delete the banner record
     const { error } = await supabase
       .from('ad_banners')
       .delete()

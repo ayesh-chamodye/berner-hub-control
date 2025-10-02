@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { uploadBannerImage, createBanner } from "../integrations/supabase/client";
+import { bannerService } from "../integrations/supabase/client";
 
 const defaultBanner = {
   title: "",
@@ -40,14 +40,27 @@ export default function BannerUpload() {
     setSuccess(null);
     try {
       if (!imageFile) throw new Error("Image file is required");
-      const imageUrl = await uploadBannerImage(imageFile);
-      const newBanner = { ...banner, image_url: imageUrl };
-      await createBanner(newBanner);
+      
+      // Upload the image first
+      const { url: imageUrl, path: imagePath } = await bannerService.uploadBannerImage(imageFile);
+      
+      // Create the banner with the image URL and path
+      const newBanner = {
+        ...banner,
+        image_url: imageUrl,
+        image_path: imagePath,
+        storage_bucket: 'ad-banners'
+      };
+      
+      await bannerService.createBanner(newBanner);
       setSuccess("Banner uploaded successfully!");
       setBanner(defaultBanner);
       setImageFile(null);
     } catch (err: any) {
       setError(err.message || "Error uploading banner");
+      
+      // If there was an error creating the banner, we should clean up the uploaded image
+      // TODO: Add cleanup code here if needed
     } finally {
       setLoading(false);
     }
