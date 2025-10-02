@@ -29,6 +29,25 @@ const generateUniqueFileName = (file: File) => {
   return `${timestamp}-${randomString}.${extension}`;
 };
 
+// Helper function to get the current user ID
+const getCurrentUserId = async () => {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  if (!session?.user) throw new Error('User must be authenticated');
+  return session.user.id;
+};
+
+// Helper function to check if user is admin
+const isUserAdmin = async () => {
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('role')
+    .single();
+  
+  if (error) throw error;
+  return user?.role === 'admin';
+};
+
 // Banner Management Functions
 export const bannerService = {
   // Upload banner image to storage and return URL
@@ -37,8 +56,8 @@ export const bannerService = {
     
     const result = await storageService.uploadFile(file, {
       bucket: 'ad-banners',
-      category: 'banners',
-      useYearMonth: true,
+      prefix: 'ad_banners',     // Ensure files go into ad_banners folder
+      useYearMonth: true,      // Organize by year/month subfolders
       maxSizeMB: 5,
       allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
       cacheControl: '3600'
@@ -82,9 +101,20 @@ export const bannerService = {
 
   // Create a new banner
   async createBanner(banner: BannerInsert) {
+    // Check if user is admin
+    if (!await isUserAdmin()) {
+      throw new Error('Only administrators can manage banners');
+    }
+
+    // Get current user ID
+    const userId = await getCurrentUserId();
+
     const { data, error } = await supabase
       .from('ad_banners')
-      .insert(banner)
+      .insert({
+        ...banner,
+        created_by: userId
+      })
       .select()
       .single();
     
@@ -94,9 +124,17 @@ export const bannerService = {
 
   // Update an existing banner
   async updateBanner(id: number, updates: BannerUpdate) {
+    // Check if user is admin
+    if (!await isUserAdmin()) {
+      throw new Error('Only administrators can manage banners');
+    }
+
     const { data, error } = await supabase
       .from('ad_banners')
-      .update(updates)
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id)
       .select()
       .single();
@@ -107,6 +145,11 @@ export const bannerService = {
 
   // Delete a banner
   async deleteBanner(id: number) {
+    // Check if user is admin
+    if (!await isUserAdmin()) {
+      throw new Error('Only administrators can manage banners');
+    }
+
     // First get the banner to get its image path
     const { data: banner, error: fetchError } = await supabase
       .from('ad_banners')

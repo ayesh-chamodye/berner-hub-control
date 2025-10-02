@@ -21,6 +21,7 @@ interface UploadResult {
 
 const DEFAULT_OPTIONS: UploadOptions = {
   bucket: 'ad-banners',
+  prefix: 'ad_banners',  // This ensures all files go into the ad_banners folder
   useYearMonth: true,
   maxSizeMB: 10,
   allowedTypes: ['image/*'],
