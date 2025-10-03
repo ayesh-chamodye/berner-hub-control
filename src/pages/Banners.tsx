@@ -12,7 +12,7 @@ import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 interface Banner {
-  id: string;
+  id: number;
   title: string;
   image_url: string;
   link_url: string | null;
@@ -100,13 +100,13 @@ export default function Banners() {
       // Create banner record
       const { error: insertError } = await supabase
         .from("ad_banners")
-        .insert({
+        .insert([{
           title: newBanner.title,
           image_url: publicUrl,
           link_url: newBanner.link_url || null,
           display_order: newBanner.display_order,
           is_active: true,
-        });
+        }]);
 
       if (insertError) throw insertError;
 
@@ -122,11 +122,11 @@ export default function Banners() {
     }
   };
 
-  const handleToggleActive = async (id: string, currentStatus: boolean) => {
+  const handleToggleActive = async (id: number, currentStatus: boolean) => {
     try {
       const { error } = await supabase
         .from("ad_banners")
-        .update({ is_active: !currentStatus })
+        .update({ is_active: !currentStatus } as any)
         .eq("id", id);
 
       if (error) throw error;
@@ -137,7 +137,7 @@ export default function Banners() {
     }
   };
 
-  const handleDelete = async (id: string, imageUrl: string) => {
+  const handleDelete = async (id: number, imageUrl: string) => {
     if (!confirm("Are you sure you want to delete this banner?")) return;
 
     try {

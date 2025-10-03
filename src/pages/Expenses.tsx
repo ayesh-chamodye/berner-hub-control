@@ -81,7 +81,7 @@ const Expenses = () => {
           status: "approved", 
           is_approved: true,
           approved_at: new Date().toISOString() 
-        })
+        } as any)
         .eq("id", id);
 
       if (error) throw error;
@@ -99,7 +99,7 @@ const Expenses = () => {
         .update({ 
           status: "rejected",
           rejected_at: new Date().toISOString() 
-        })
+        } as any)
         .eq("id", id);
 
       if (error) throw error;

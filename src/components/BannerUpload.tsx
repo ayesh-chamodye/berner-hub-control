@@ -22,7 +22,7 @@ export default function BannerUpload() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setBanner((prev) => ({ ...prev, [name]: value }));
   };
@@ -46,10 +46,20 @@ export default function BannerUpload() {
       
       // Create the banner with the image URL and path
       const newBanner = {
-        ...banner,
+        title: banner.title,
+        description: banner.description || null,
         image_url: imageUrl,
         image_path: imagePath,
-        storage_bucket: 'ad-banners'
+        storage_bucket: 'ad-banners',
+        link_url: banner.link_url || null,
+        link_type: banner.link_type as 'external' | 'internal' | 'none',
+        action_data: banner.action_data || null,
+        display_order: banner.display_order,
+        is_active: banner.is_active,
+        start_date: banner.start_date || null,
+        end_date: banner.end_date || null,
+        target_roles: banner.target_roles.length > 0 ? banner.target_roles : null,
+        created_by: null
       };
       
       await bannerService.createBanner(newBanner);

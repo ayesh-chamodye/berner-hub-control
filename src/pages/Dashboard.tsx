@@ -61,7 +61,7 @@ const Dashboard = () => {
       
       if (expensesError) throw expensesError;
       
-      const totalExpenses = expensesData?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+      const totalExpenses = expensesData?.reduce((sum: number, exp: any) => sum + Number(exp.amount), 0) || 0;
 
       // Fetch pending count
       const { count: pendingCount, error: pendingError } = await supabase

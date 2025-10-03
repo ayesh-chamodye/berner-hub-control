@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getActiveBanners, incrementBannerViewCount, incrementBannerClickCount } from "../integrations/supabase/client";
+import { bannerService } from "../integrations/supabase/client";
 
 export default function BannerSlider({ userRole }: { userRole?: string }) {
   const [banners, setBanners] = useState<any[]>([]);
@@ -10,12 +10,12 @@ export default function BannerSlider({ userRole }: { userRole?: string }) {
     async function fetchBanners() {
       setLoading(true);
       try {
-        const data = await getActiveBanners(userRole);
+        const data = await bannerService.getActiveBanners(userRole);
         setBanners(data || []);
         setCurrent(0);
         // Increment view count for first banner
         if (data && data.length > 0) {
-          incrementBannerViewCount(data[0].id);
+          bannerService.incrementViewCount(data[0].id);
         }
       } finally {
         setLoading(false);
@@ -27,17 +27,17 @@ export default function BannerSlider({ userRole }: { userRole?: string }) {
   const handleNext = () => {
     const next = (current + 1) % banners.length;
     setCurrent(next);
-    incrementBannerViewCount(banners[next].id);
+    bannerService.incrementViewCount(banners[next].id);
   };
 
   const handlePrev = () => {
     const prev = (current - 1 + banners.length) % banners.length;
     setCurrent(prev);
-    incrementBannerViewCount(banners[prev].id);
+    bannerService.incrementViewCount(banners[prev].id);
   };
 
   const handleClick = (banner: any) => {
-    incrementBannerClickCount(banner.id);
+    bannerService.incrementClickCount(banner.id);
     if (banner.link_url && banner.link_type !== "none") {
       window.open(banner.link_url, banner.link_type === "external" ? "_blank" : "_self");
     }

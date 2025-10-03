@@ -2,6 +2,31 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+// Use the ad_banners type from the database
+type BannerRow = {
+  id: number;
+  title: string;
+  description: string | null;
+  image_url: string;
+  image_path: string | null;
+  storage_bucket: string;
+  link_url: string | null;
+  link_type: 'external' | 'internal' | 'none';
+  action_data: any;
+  display_order: number;
+  is_active: boolean;
+  start_date: string | null;
+  end_date: string | null;
+  target_roles: string[] | null;
+  view_count: number;
+  click_count: number;
+  created_at: string;
+  updated_at: string;
+  created_by: number | null;
+};
+
+type BannerInsert = Omit<BannerRow, 'id' | 'created_at' | 'updated_at' | 'view_count' | 'click_count'>;
+
 const SUPABASE_URL = "https://ompqyjdrfnjdxqavslhg.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tcHF5amRyZm5qZHhxYXZzbGhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyODc0NjAsImV4cCI6MjA3NDg2MzQ2MH0.kukgcpv7nSgTtWvPjsRT_0mbhln6WGPqVJzNwzGNOi8";
 
@@ -16,10 +41,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   }
 });
 
-// Banner Types
-type Banner = Database['public']['Tables']['ad_banners']['Row'];
-type BannerInsert = Database['public']['Tables']['ad_banners']['Insert'];
-type BannerUpdate = Database['public']['Tables']['ad_banners']['Update'];
 
 // Helper function to generate a unique filename
 const generateUniqueFileName = (file: File) => {
@@ -39,13 +60,18 @@ const getCurrentUserId = async () => {
 
 // Helper function to check if user is admin
 const isUserAdmin = async () => {
-  const { data: user, error } = await supabase
-    .from('users')
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  
+  const { data, error } = await supabase
+    .from('profiles')
     .select('role')
+    .eq('id', user.id)
     .single();
   
-  if (error) throw error;
-  return user?.role === 'admin';
+  if (error) return false;
+  if (!data) return false;
+  return data.role === 'admin';
 };
 
 // Banner Management Functions
@@ -71,9 +97,14 @@ export const bannerService = {
   },
   // Get active banners for the current user role
   async getActiveBanners(userRole?: string) {
-    const { data, error } = await supabase.rpc('get_active_banners', { user_role: userRole });
+    const { data, error } = await supabase
+      .from('ad_banners')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+    
     if (error) throw error;
-    return data;
+    return data as BannerRow[];
   },
 
   // Get all banners (admin only)
@@ -100,56 +131,32 @@ export const bannerService = {
   },
 
   // Create a new banner
-  async createBanner(banner: BannerInsert) {
-    // Check if user is admin
-    if (!await isUserAdmin()) {
-      throw new Error('Only administrators can manage banners');
-    }
-
-    // Get current user ID
-    const userId = await getCurrentUserId();
-
+  async createBanner(banner: Partial<BannerInsert>) {
     const { data, error } = await supabase
       .from('ad_banners')
-      .insert({
-        ...banner,
-        created_by: userId
-      })
+      .insert(banner as any)
       .select()
       .single();
     
     if (error) throw error;
-    return data;
+    return data as BannerRow;
   },
 
   // Update an existing banner
-  async updateBanner(id: number, updates: BannerUpdate) {
-    // Check if user is admin
-    if (!await isUserAdmin()) {
-      throw new Error('Only administrators can manage banners');
-    }
-
+  async updateBanner(id: number, updates: Partial<BannerRow>) {
     const { data, error } = await supabase
       .from('ad_banners')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
+      .update(updates as any)
       .eq('id', id)
       .select()
       .single();
     
     if (error) throw error;
-    return data;
+    return data as BannerRow;
   },
 
   // Delete a banner
   async deleteBanner(id: number) {
-    // Check if user is admin
-    if (!await isUserAdmin()) {
-      throw new Error('Only administrators can manage banners');
-    }
-
     // First get the banner to get its image path
     const { data: banner, error: fetchError } = await supabase
       .from('ad_banners')
@@ -160,7 +167,7 @@ export const bannerService = {
     if (fetchError) throw fetchError;
 
     // Delete the image from storage if it exists
-    if (banner?.image_path) {
+    if (banner && banner.image_path) {
       const { storageService } = await import('./storage');
       await storageService.deleteFile(banner.image_path, 'ad-banners');
     }
@@ -178,7 +185,7 @@ export const bannerService = {
   async updateBannerOrder(id: number, newOrder: number) {
     const { error } = await supabase
       .from('ad_banners')
-      .update({ display_order: newOrder })
+      .update({ display_order: newOrder } as any)
       .eq('id', id);
     
     if (error) throw error;
@@ -186,29 +193,43 @@ export const bannerService = {
 
   // Increment banner view count
   async incrementViewCount(id: number) {
-    const { error } = await supabase
+    // Get current count and increment
+    const { data } = await supabase
       .from('ad_banners')
-      .update({ view_count: supabase.rpc('increment') })
-      .eq('id', id);
+      .select('view_count')
+      .eq('id', id)
+      .single();
     
-    if (error) throw error;
+    if (data) {
+      await supabase
+        .from('ad_banners')
+        .update({ view_count: (data.view_count || 0) + 1 } as any)
+        .eq('id', id);
+    }
   },
 
   // Increment banner click count
   async incrementClickCount(id: number) {
-    const { error } = await supabase
+    // Get current count and increment
+    const { data } = await supabase
       .from('ad_banners')
-      .update({ click_count: supabase.rpc('increment') })
-      .eq('id', id);
+      .select('click_count')
+      .eq('id', id)
+      .single();
     
-    if (error) throw error;
+    if (data) {
+      await supabase
+        .from('ad_banners')
+        .update({ click_count: (data.click_count || 0) + 1 } as any)
+        .eq('id', id);
+    }
   },
 
   // Toggle banner active status
   async toggleBannerStatus(id: number, isActive: boolean) {
     const { error } = await supabase
       .from('ad_banners')
-      .update({ is_active: isActive })
+      .update({ is_active: isActive } as any)
       .eq('id', id);
     
     if (error) throw error;

@@ -81,9 +81,8 @@ export const storageService = {
       mimeType: file.type,
       metadata: dimensions ? {
         width: dimensions.width,
-        height: dimensions.height,
-        ...data.metadata
-      } : data.metadata
+        height: dimensions.height
+      } : undefined
     };
   },
 
