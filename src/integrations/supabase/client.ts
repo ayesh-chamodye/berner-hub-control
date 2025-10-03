@@ -67,11 +67,11 @@ const isUserAdmin = async () => {
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
   
   if (error) return false;
   if (!data) return false;
-  return data.role === 'admin';
+  return (data as any).role === 'admin';
 };
 
 // Banner Management Functions
@@ -115,7 +115,7 @@ export const bannerService = {
       .order('display_order', { ascending: true });
     
     if (error) throw error;
-    return data;
+    return (data || []) as any[];
   },
 
   // Get a single banner by ID
@@ -124,19 +124,19 @@ export const bannerService = {
       .from('ad_banners')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
     
     if (error) throw error;
-    return data;
+    return data as any;
   },
 
   // Create a new banner
   async createBanner(banner: Partial<BannerInsert>) {
     const { data, error } = await supabase
       .from('ad_banners')
-      .insert(banner as any)
+      .insert([banner] as any)
       .select()
-      .single();
+      .maybeSingle();
     
     if (error) throw error;
     return data as BannerRow;
@@ -149,7 +149,7 @@ export const bannerService = {
       .update(updates as any)
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
     
     if (error) throw error;
     return data as BannerRow;
@@ -162,14 +162,14 @@ export const bannerService = {
       .from('ad_banners')
       .select('image_path')
       .eq('id', id)
-      .single();
+      .maybeSingle();
     
     if (fetchError) throw fetchError;
 
     // Delete the image from storage if it exists
-    if (banner && banner.image_path) {
+    if (banner && (banner as any).image_path) {
       const { storageService } = await import('./storage');
-      await storageService.deleteFile(banner.image_path, 'ad-banners');
+      await storageService.deleteFile((banner as any).image_path, 'ad-banners');
     }
 
     // Delete the banner record
@@ -198,12 +198,12 @@ export const bannerService = {
       .from('ad_banners')
       .select('view_count')
       .eq('id', id)
-      .single();
+      .maybeSingle();
     
     if (data) {
       await supabase
         .from('ad_banners')
-        .update({ view_count: (data.view_count || 0) + 1 } as any)
+        .update({ view_count: ((data as any).view_count || 0) + 1 } as any)
         .eq('id', id);
     }
   },
@@ -215,12 +215,12 @@ export const bannerService = {
       .from('ad_banners')
       .select('click_count')
       .eq('id', id)
-      .single();
+      .maybeSingle();
     
     if (data) {
       await supabase
         .from('ad_banners')
-        .update({ click_count: (data.click_count || 0) + 1 } as any)
+        .update({ click_count: ((data as any).click_count || 0) + 1 } as any)
         .eq('id', id);
     }
   },
