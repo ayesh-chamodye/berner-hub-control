@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader } from "@/components/ui/sidebar";
+import AppIcon from "@/assets/app_icon.svg";
 const menuItems = [{
   title: "Dashboard",
   url: "/",
@@ -40,7 +41,7 @@ export function AdminSidebar() {
       <SidebarHeader className="border-b px-6 py-4 bg-orange-500">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Receipt className="h-5 w-5 text-primary-foreground" />
+            <img src={AppIcon} alt="App Icon" className="h-5 w-5" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-slate-50">Berner</h2>
