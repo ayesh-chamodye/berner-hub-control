@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Check, X, Eye } from "lucide-react";
+import { ExpenseImageViewer } from "@/components/ExpenseImageViewer";
 
 interface Expense {
   id: number;
@@ -46,6 +47,8 @@ const Expenses = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedExpenseId, setSelectedExpenseId] = useState<number | null>(null);
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
 
   useEffect(() => {
     fetchExpenses();
@@ -199,6 +202,16 @@ const Expenses = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedExpenseId(expense.id);
+                              setImageViewerOpen(true);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           {expense.status === "pending" && (
                             <>
                               <Button 
@@ -229,6 +242,14 @@ const Expenses = () => {
           </div>
         </CardContent>
       </Card>
+
+      {selectedExpenseId && (
+        <ExpenseImageViewer
+          expenseId={selectedExpenseId}
+          open={imageViewerOpen}
+          onOpenChange={setImageViewerOpen}
+        />
+      )}
     </div>
   );
 };

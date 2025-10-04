@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Expenses from "./pages/Expenses";
 import Users from "./pages/Users";
 import Banners from "./pages/Banners";
+import Support from "./pages/Support";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +42,7 @@ const App = () => (
                           <Route path="/expenses" element={<Expenses />} />
                           <Route path="/users" element={<Users />} />
                           <Route path="/banners" element={<Banners />} />
+                          <Route path="/support" element={<Support />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </main>

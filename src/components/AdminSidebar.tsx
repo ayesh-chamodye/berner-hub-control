@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Receipt, Settings, Activity, Tag, Image, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Receipt, Settings, Activity, Tag, Image, LogOut, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +22,10 @@ const menuItems = [{
   title: "Ad Banners",
   url: "/banners",
   icon: Image
+}, {
+  title: "Support",
+  url: "/support",
+  icon: MessageSquare
 }];
 export function AdminSidebar() {
   const navigate = useNavigate();
