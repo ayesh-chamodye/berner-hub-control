@@ -24,6 +24,7 @@ interface Message {
   is_read: boolean;
   attachment_url?: string;
   attachment_name?: string;
+  attachment_type?: string;
 }
 
 interface Ticket {
@@ -149,6 +150,12 @@ export const SupportChatDialog = ({ ticketId, open, onOpenChange }: SupportChatD
     return date.toLocaleString();
   };
 
+  const isImageAttachment = (url: string, type?: string) => {
+    if (type?.startsWith("image/")) return true;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+    return imageExtensions.some(ext => url.toLowerCase().endsWith(ext));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl h-[80vh] flex flex-col">
@@ -203,15 +210,28 @@ export const SupportChatDialog = ({ ticketId, open, onOpenChange }: SupportChatD
                           <p className="text-sm whitespace-pre-wrap">{message.message}</p>
                         </div>
                         {message.attachment_url && (
-                          <a
-                            href={message.attachment_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline flex items-center gap-1"
-                          >
-                            <Paperclip className="h-3 w-3" />
-                            {message.attachment_name}
-                          </a>
+                          <>
+                            {isImageAttachment(message.attachment_url, message.attachment_type) ? (
+                              <div className="rounded-lg overflow-hidden border max-w-sm">
+                                <img
+                                  src={message.attachment_url}
+                                  alt={message.attachment_name || "Attachment"}
+                                  className="w-full h-auto cursor-pointer"
+                                  onClick={() => window.open(message.attachment_url, '_blank')}
+                                />
+                              </div>
+                            ) : (
+                              <a
+                                href={message.attachment_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-primary hover:underline flex items-center gap-1"
+                              >
+                                <Paperclip className="h-3 w-3" />
+                                {message.attachment_name || "View Attachment"}
+                              </a>
+                            )}
+                          </>
                         )}
                         <span className="text-xs text-muted-foreground">
                           {formatTime(message.created_at)}

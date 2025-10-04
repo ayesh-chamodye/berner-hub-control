@@ -14,7 +14,8 @@ interface ExpenseAttachment {
   id: number;
   file_name: string;
   file_url: string;
-  file_type: string;
+  file_type?: string;
+  mime_type?: string;
   file_size: number;
   uploaded_at: string;
 }
@@ -88,7 +89,7 @@ export const ExpenseImageViewer = ({ expenseId, open, onOpenChange }: ExpenseIma
                     {formatFileSize(attachment.file_size)} • {new Date(attachment.uploaded_at).toLocaleDateString()}
                   </span>
                 </div>
-                {attachment.file_type?.startsWith("image/") ? (
+                {(attachment.file_type?.startsWith("image/") || attachment.mime_type?.startsWith("image/")) ? (
                   <img
                     src={attachment.file_url}
                     alt={attachment.file_name}
